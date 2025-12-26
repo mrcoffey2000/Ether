@@ -1,0 +1,386 @@
+Ether.html
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETHER</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            background: #000;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            color: #f5f5f5;
+        }
+
+        .breathing-mark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px;
+            height: 320px;
+            opacity: 0.8;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* --- UI Structure --- */
+        .ui {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            padding: 56px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Header - Asymmetric */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: 11px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            opacity: 0.75;
+        }
+
+        .header .title {
+            font-size: 13px;
+            letter-spacing: 0.25em;
+        }
+
+        /* Object Presentation - Asymmetric Left */
+        .object {
+            max-width: 480px;
+            margin-left: 0;
+        }
+
+        .object h1 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 42px;
+            font-weight: 300;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .object .meta {
+            font-size: 12px;
+            opacity: 0.65;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .object .provenance {
+            font-size: 11px;
+            opacity: 0.5;
+            margin-bottom: 48px;
+            line-height: 1.7;
+            max-width: 420px;
+        }
+
+        /* Bid Section */
+        .bid-section {
+            margin-top: 40px;
+        }
+
+        .bid-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.25);
+            color: #fff;
+            font-size: 16px;
+            width: 240px;
+            outline: none;
+            padding-bottom: 8px;
+            letter-spacing: 0.02em;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .bid-input::placeholder {
+            color: rgba(255,255,255,0.35);
+        }
+
+        .bid-button {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.5);
+            color: #fff;
+            padding: 11px 24px;
+            font-size: 10px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            transition: all 0.4s ease;
+            font-weight: 400;
+            cursor: pointer;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .bid-button:hover {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        .bid-note {
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            opacity: 0.55;
+            line-height: 1.6;
+            max-width: 320px;
+        }
+
+        /* Footer - Restrained */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            opacity: 0.5;
+        }
+
+        /* Doctrine Overlay (Hidden by default, revealed on scroll or key) */
+        .doctrine {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.97);
+            z-index: 10;
+            display: none;
+            overflow-y: auto;
+            padding: 80px 60px;
+        }
+
+        .doctrine.visible {
+            display: block;
+        }
+
+        .doctrine-content {
+            max-width: 680px;
+            margin: 0 auto;
+            font-size: 13px;
+            line-height: 1.9;
+            letter-spacing: 0.01em;
+            opacity: 0.85;
+        }
+
+        .doctrine-content h2 {
+            font-family: Georgia, serif;
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 24px;
+            margin-top: 56px;
+            opacity: 0.9;
+        }
+
+        .doctrine-content h2:first-child {
+            margin-top: 0;
+        }
+
+        .doctrine-content p {
+            margin-bottom: 20px;
+        }
+
+        .doctrine-content ul {
+            list-style: none;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        .doctrine-content ul li:before {
+            content: "—";
+            position: absolute;
+            margin-left: -20px;
+            opacity: 0.6;
+        }
+
+        .doctrine-content .close {
+            position: fixed;
+            top: 56px;
+            right: 60px;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .doctrine-content .close:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Breathing Mark -->
+    <svg class="breathing-mark" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100">
+        <ellipse id="outer" cx="50" cy="50" rx="48" ry="47.5" fill="none" stroke="#0b1c2d" stroke-width="0.8"/>
+        <circle id="dot" cx="50" cy="97.5" r="1.2" fill="#9d0135"/>
+        <animate xlink:href="#outer" attributeName="rx" values="48;48.05;47.95;48" dur="15s" repeatCount="indefinite"/>
+        <animate xlink:href="#outer" attributeName="ry" values="47.5;47.55;47.45;47.5" dur="15s" repeatCount="indefinite"/>
+        <animate xlink:href="#dot" attributeName="cx" values="50;50.02;49.98;50" dur="15s" repeatCount="indefinite"/>
+        <animate xlink:href="#dot" attributeName="cy" values="97.5;97.52;97.48;97.5" dur="15s" repeatCount="indefinite"/>
+        <animate xlink:href="#outer" attributeName="stroke" values="#0b1c2d;#0a1a29;#0c1e31;#0b1c2d" dur="15s" repeatCount="indefinite"/>
+        <animate xlink:href="#dot" attributeName="fill" values="#9d0135;#8f012f;#a8013a;#9d0135" dur="15s" repeatCount="indefinite"/>
+    </svg>
+
+    <div class="ui">
+        <div class="header">
+            <div class="title">ETHER</div>
+            <div>One watch every Friday</div>
+        </div>
+
+        <div class="object">
+            <h1>Patek Philippe<br>Reference 2499</h1>
+            <div class="meta">18k Yellow Gold · Perpetual Calendar Chronograph · Third Series</div>
+            
+            <div class="provenance">
+                Manufactured 1962. Extract from the Archives. 
+                Dial refinished once in 1981 by the manufacture.
+                Original caseback. Movement service documented.
+            </div>
+
+            <div class="bid-section">
+                <input type="text" placeholder="Your bid (USD)" class="bid-input">
+                <button class="bid-button">Place Bid</button>
+                <div class="bid-note">72-hour window. Highest unique bid wins. 10% premium.</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div>The wrist remembers · Full circle</div>
+            <div>Est. 2025</div>
+        </div>
+    </div>
+
+    <!-- Doctrine Overlay -->
+    <div class="doctrine" id="doctrine">
+        <div class="doctrine-content">
+            <div class="close" onclick="closeDoctrine()">Close [ESC]</div>
+
+            <h2>FIRST PRINCIPLE</h2>
+            <p>Ether exists to present objects that retain meaning after attention leaves.</p>
+            <p>Not relevance. Not scale. Not community. Meaning.</p>
+
+            <h2>WHAT ETHER IS (AND IS NOT)</h2>
+            <p>Ether is a selection discipline, not a marketplace.</p>
+            <ul>
+                <li>Chooses, never sources</li>
+                <li>Presents, never persuades</li>
+                <li>Withholds, never teases</li>
+            </ul>
+            <p>Ether is not a retailer, media brand, hype engine, or growth story.</p>
+
+            <h2>AESTHETIC DOCTRINE</h2>
+            <ul>
+                <li>Black field</li>
+                <li>White sans-serif typography</li>
+                <li>Slight asymmetry</li>
+                <li>Negative space</li>
+                <li>Real images only</li>
+                <li>No embellishment</li>
+                <li>No symmetry for comfort</li>
+            </ul>
+
+            <h2>LANGUAGE RULES</h2>
+            <p>Ether speaks plainly or not at all.</p>
+            <p>Never: Hype. Superlatives. Urgency. Comparative language. Explanations of value.</p>
+            <p>If it must be explained, it does not belong.</p>
+
+            <h2>PRICING & NEGOTIATION</h2>
+            <ul>
+                <li>Prices are fixed or private</li>
+                <li>Never adjusted mid-interest</li>
+                <li>Negotiation is declined without explanation</li>
+            </ul>
+            <p><em>The price reflects the piece as presented. We do not negotiate publicly.</em></p>
+
+            <h2>CLIENT PHILOSOPHY</h2>
+            <p>Ether quietly disengages from clients who ask for discounts, seek ROI validation, impose urgency, or treat access as entitlement.</p>
+            <p>No confrontation. No record. Access simply does not repeat.</p>
+
+            <h2>QUIET REJECTION TEMPLATE</h2>
+            <p><em>Thank you for your interest. At this time, we're unable to proceed. — Ether</em></p>
+
+            <h2>NO-FAQ POLICY</h2>
+            <p>Ether does not publish FAQs. If information is essential, it is in the listing. If absent, it is intentionally absent.</p>
+            <p>Clarity is provided. Comfort is not.</p>
+
+            <h2>STRESS TEST — WHEN DEMAND SPIKES</h2>
+            <p>When demand increases:</p>
+            <ul>
+                <li>Ether becomes quieter</li>
+                <li>No added inventory</li>
+                <li>No price movement</li>
+                <li>No acknowledgment of demand</li>
+            </ul>
+            <p>Silence is the defense mechanism.</p>
+
+            <h2>COUNTERFACTUAL TEST</h2>
+            <p>If watches disappeared tomorrow, Ether would still exist.</p>
+            <p>Qualification test:</p>
+            <ul>
+                <li>Does the object hold gravity without a market?</li>
+                <li>Does it survive silence?</li>
+                <li>Does it remain coherent without pricing context?</li>
+            </ul>
+            <p>If no → rejected.</p>
+
+            <h2>THE KILL SWITCH</h2>
+            <p>The moment Ether needs to explain itself to be understood, it stops. Immediately.</p>
+
+            <h2>SUCCESSION RULE</h2>
+            <p>Ether transfers only if a successor already demonstrated restraint without instruction.</p>
+            <p>No applications. No grooming. No committee.</p>
+            <p>If no such person exists → Ether ends.</p>
+
+            <h2>SUNSET PROTOCOL</h2>
+            <p>No announcement. Site freezes as archive. All offerings marked unavailable.</p>
+            <p><em>Ether is no longer placing objects. The archive remains as record.</em></p>
+            <p>Ether does not rebirth.</p>
+
+            <h2>FOUNDER OATH</h2>
+            <p>I will not chase relevance.<br>
+            I will not explain conviction.<br>
+            I will not expand to justify existence.<br>
+            I will end this before I compromise it.</p>
+        </div>
+    </div>
+
+    <script>
+        // Doctrine reveal on 'D' key
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'd' || e.key === 'D') {
+                document.getElementById('doctrine').classList.add('visible');
+            }
+            if (e.key === 'Escape') {
+                closeDoctrine();
+            }
+        });
+
+        function closeDoctrine() {
+            document.getElementById('doctrine').classList.remove('visible');
+        }
+    </script>
+</body>
+</html>
